@@ -1,0 +1,76 @@
+import random
+
+class Warrior:
+    def __init__(self):
+        self.health = 100
+        self.attack_power = random.randint(10, 30)
+        self.is_alive = True
+
+    def attack(self, opponent):
+        if self.is_alive:
+            opponent.health -= self.attack_power
+            if opponent.health <= 0:
+                opponent.is_alive = False
+
+class Knight(Warrior):
+    def __init__(self):
+        super().__init__()
+        self.health = 120
+        self.attack_power = random.randint(15, 25)
+
+class Defender(Warrior):
+    def __init__(self):
+        super().__init__()
+        self.health = 150
+        self.attack_power = random.randint(5, 15)
+
+class Vampire(Warrior):
+    def __init__(self):
+        super().__init__()
+        self.health = 80
+        self.attack_power = random.randint(20, 40)
+
+    def attack(self, opponent):
+        super().attack(opponent)
+        if not opponent.is_alive:
+            self.health += 10  # Vampires heal when they defeat an opponent.
+
+class Lancer(Warrior):
+    def __init__(self):
+        super().__init__()
+        self.health = 90
+        self.attack_power = random.randint(12, 28)
+
+def fight(fighter1, fighter2):
+    while fighter1.is_alive and fighter2.is_alive:
+        fighter1.attack(fighter2)
+        if fighter2.is_alive:
+            fighter2.attack(fighter1)
+
+    return fighter1.is_alive
+
+# Example Usage
+chuck = Warrior()
+bruce = Warrior()
+carl = Knight()
+dave = Warrior()
+mark = Warrior()
+bob = Defender()
+mike = Knight()
+rog = Warrior()
+lancelot = Defender()
+eric = Vampire()
+adam = Vampire()
+richard = Defender()
+ogre = Warrior()
+freelancer = Lancer()
+vampire = Vampire()
+
+assert fight(chuck, bruce) == True
+assert fight(dave, carl) == False
+assert fight(mark, bob) == True
+assert fight(mike, rog) == True
+assert fight(lancelot, eric) == True
+assert fight(adam, vampire) == False
+assert fight(richard, ogre) == False
+assert fight(freelancer, chuck) == True
