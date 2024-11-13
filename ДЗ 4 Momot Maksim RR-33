@@ -1,66 +1,96 @@
-import random
+class Warrior {
+    protected int health;
+    protected int attack;
+    protected int defense;
+    protected boolean isAlive;
 
-class Fighter:
-    def __init__(self, name, health, attack_power):
-        self.name = name
-        self.health = health
-        self.attack_power = attack_power
-        self.is_alive = True
+    public Warrior() {
+        this.health = 50;
+        this.attack = 5;
+        this.defense = 0;
+        this.isAlive = true;
+    }
 
-    def attack(self, opponent):
-        if self.is_alive:
-            opponent.health -= self.attack_power
-            if opponent.health <= 0:
-                opponent.is_alive = False
+    public int getHealth() {
+        return health;
+    }
 
-class Warrior(Fighter):
-    def __init__(self):
-        super().__init__(name="Warrior", health=100, attack_power=random.randint(10, 30))
+    public int getAttack() {
+        return attack;
+    }
 
-class Knight(Fighter):
-    def __init__(self):
-        super().__init__(name="Knight", health=120, attack_power=random.randint(15, 25))
+    public boolean isAlive() {
+        return isAlive;
+    }
 
-class Defender(Fighter):
-    def __init__(self):
-        super().__init__(name="Defender", health=150, attack_power=random.randint(5, 15))
+    public void takeDamage(int damage) {
+        int damageTaken = Math.max(damage - defense, 0);
+        health -= damageTaken;
+        if (health <= 0) {
+            isAlive = false;
+        }
+    }
+}
 
-class Vampire(Fighter):
-    def __init__(self):
-        super().__init__(name="Vampire", health=80, attack_power=random.randint(20, 40))
+class Knight extends Warrior {
+    public Knight() {
+        this.attack = 7;
+    }
+}
 
-def fight(fighter1, fighter2):
-    # Simulates a fight until one fighter is no longer alive
-    while fighter1.is_alive and fighter2.is_alive:
-        fighter1.attack(fighter2)
-        if fighter2.is_alive:
-            fighter2.attack(fighter1)
+class Defender extends Warrior {
+    public Defender() {
+        this.health = 60;
+        this.attack = 3;
+        this.defense = 2;
+    }
 
-    return fighter1.is_alive  # Returns True if fighter1 wins
+    @Override
+    public void takeDamage(int damage) {
+        int damageTaken = Math.max(damage - defense, 0);
+        health -= damageTaken;
+        if (health <= 0) {
+            isAlive = false;
+        }
+    }
+}
 
-# Example usage
-if __name__ == "__main__":
-    chuck = Warrior()
-    bruce = Warrior()
-    carl = Knight()
-    dave = Warrior()
-    mark = Warrior()
-    bob = Defender()
-    mike = Knight()
-    rog = Warrior()
-    lancelot = Defender()
-    eric = Vampire()
-    adam = Vampire()
-    richard = Defender()
-    ogre = Warrior()
+class Vampire extends Warrior {
+    private int vampirism;
 
-    # Test fights
-    assert fight(chuck, bruce) == True
-    assert fight(dave, carl) == False
-    assert fight(mark, bob) == True  # Example assertion, modify as needed
-    assert fight(mike, rog) == False  # Example assertion
-    assert fight(lancelot, carl) == True  # Example assertion
-    assert fight(eric, adam) == True  # Example assertion
-    assert fight(richard, ogre) == False  # Example assertion
+    public Vampire() {
+        this.health = 40;
+        this.attack = 4;
+        this.vampirism = 50; // Representing 50% vampirism
+    }
 
-    print("All assertions passed!")
+    @Override
+    public void takeDamage(int damage) {
+        super.takeDamage(damage);
+    }
+
+    public void heal(int dealtDamage) {
+        int healAmount = (dealtDamage * vampirism) / 100;
+        this.health = Math.min(this.health + healAmount, 40); // Max health for Vampire is 40
+    }
+}
+
+class Battle {
+    public static boolean fight(Warrior warrior1, Warrior warrior2) {
+        while (warrior1.isAlive() && warrior2.isAlive()) {
+            warrior2.takeDamage(warrior1.getAttack());
+            if (warrior2.isAlive() && warrior1 instanceof Vampire) {
+                ((Vampire) warrior1).heal(warrior1.getAttack());
+            }
+            if (!warrior2.isAlive()) {
+                return true;
+            }
+
+            warrior1.takeDamage(warrior2.getAttack());
+            if (warrior1.isAlive() && warrior2 instanceof Vampire) {
+                ((Vampire) warrior2).heal(warrior2.getAttack());
+            }
+        }
+        return warrior1.isAlive();
+    }
+}
