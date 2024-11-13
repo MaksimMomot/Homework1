@@ -1,76 +1,123 @@
-import random
+class Warrior {
+    protected int health = 50;
+    protected int attack = 5;
+    
+    public boolean isAlive() {
+        return health > 0;
+    }
 
-class Warrior:
-    def __init__(self):
-        self.health = 100
-        self.attack_power = random.randint(10, 30)
-        self.is_alive = True
+    public void takeDamage(int damage) {
+        health -= damage;
+        if (health < 0) {
+            health = 0;
+        }
+    }
 
-    def attack(self, opponent):
-        if self.is_alive:
-            opponent.health -= self.attack_power
-            if opponent.health <= 0:
-                opponent.is_alive = False
+    public int getAttack() {
+        return attack;
+    }
+}
 
-class Knight(Warrior):
-    def __init__(self):
-        super().__init__()
-        self.health = 120
-        self.attack_power = random.randint(15, 25)
+class Knight extends Warrior {
+    public Knight() {
+        this.attack = 7;
+    }
+}
 
-class Defender(Warrior):
-    def __init__(self):
-        super().__init__()
-        self.health = 150
-        self.attack_power = random.randint(5, 15)
+class Defender extends Warrior {
+    private int defense = 2;
 
-class Vampire(Warrior):
-    def __init__(self):
-        super().__init__()
-        self.health = 80
-        self.attack_power = random.randint(20, 40)
+    public Defender() {
+        this.health = 60;
+        this.attack = 3;
+    }
 
-    def attack(self, opponent):
-        super().attack(opponent)
-        if not opponent.is_alive:
-            self.health += 10  # Vampires heal when they defeat an opponent.
+    @Override
+    public void takeDamage(int damage) {
+        int reducedDamage = Math.max(0, damage - defense);
+        super.takeDamage(reducedDamage);
+    }
+}
 
-class Lancer(Warrior):
-    def __init__(self):
-        super().__init__()
-        self.health = 90
-        self.attack_power = random.randint(12, 28)
+class Vampire extends Warrior {
+    private int vampirism = 50; // Percentage
 
-def fight(fighter1, fighter2):
-    while fighter1.is_alive and fighter2.is_alive:
-        fighter1.attack(fighter2)
-        if fighter2.is_alive:
-            fighter2.attack(fighter1)
+    public Vampire() {
+        this.health = 40;
+        this.attack = 4;
+    }
 
-    return fighter1.is_alive
+    @Override
+    public void takeDamage(int damage) {
+        super.takeDamage(damage);
+    }
 
-# Example Usage
-chuck = Warrior()
-bruce = Warrior()
-carl = Knight()
-dave = Warrior()
-mark = Warrior()
-bob = Defender()
-mike = Knight()
-rog = Warrior()
-lancelot = Defender()
-eric = Vampire()
-adam = Vampire()
-richard = Defender()
-ogre = Warrior()
-freelancer = Lancer()
-vampire = Vampire()
+    public void heal(int damageDealt) {
+        int healing = (damageDealt * vampirism) / 100;
+        this.health += healing;
+    }
+}
 
-assert fight(chuck, bruce) == True
-assert fight(dave, carl) == False
-assert fight(mark, bob) == True
-assert fight(mike, rog) == True
-assert fight(lancelot, eric) == True
-assert fight(adam, vampire) == False
-assert fight(richard, ogre) == False
-assert fight(freelancer, chuck) == True
+class Lancer extends Warrior {
+    public Lancer() {
+        this.health = 50;
+        this.attack = 6;
+    }
+
+    public int getSecondaryAttack() {
+        return this.attack / 2;
+    }
+}
+
+class Army {
+    private LinkedList<Warrior> units = new LinkedList<>();
+
+    public void addUnits(Class<? extends Warrior> unitType, int number) {
+        try {
+            for (int i = 0; i < number; i++) {
+                units.add(unitType.getDeclaredConstructor().newInstance());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Warrior getFirstUnit() {
+        return units.isEmpty() ? null : units.getFirst();
+    }
+
+    public void removeDeadUnit() {
+        if (!units.isEmpty() && !units.getFirst().isAlive()) {
+            units.removeFirst();
+        }
+    }
+
+    public boolean isDefeated() {
+        return units.isEmpty();
+    }
+}
+
+class Battle {
+    public static boolean fight(Warrior warrior1, Warrior warrior2) {
+        while (warrior1.isAlive() && warrior2.isAlive()) {
+            warrior2.takeDamage(warrior1.getAttack());
+            if (warrior2.isAlive()) {
+                warrior1.takeDamage(warrior2.getAttack());
+            }
+        }
+        return warrior1.isAlive();
+    }
+
+    public static boolean fight(Army army1, Army army2) {
+        while (!army1.isDefeated() && !army2.isDefeated()) {
+            Warrior unit1 = army1.getFirstUnit();
+            Warrior unit2 = army2.getFirstUnit();
+            if (fight(unit1, unit2)) {
+                army2.removeDeadUnit();
+            } else {
+                army1.removeDeadUnit();
+            }
+        }
+        return !army1.isDefeated();
+    }
+}
