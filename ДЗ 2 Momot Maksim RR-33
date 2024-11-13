@@ -1,50 +1,92 @@
-import random
+class Warrior {
+    protected int health = 50;
+    protected int attack = 5;
 
-class Fighter:
-    def __init__(self, name, health, attack_power):
-        self.name = name
-        self.health = health
-        self.attack_power = attack_power
-        self.is_alive = True
+    public boolean isAlive() {
+        return health > 0;
+    }
 
-    def attack(self, opponent):
-        if self.is_alive:
-            opponent.health -= self.attack_power
-            if opponent.health <= 0:
-                opponent.is_alive = False
+    public int getAttack() {
+        return attack;
+    }
 
-class Warrior(Fighter):
-    def __init__(self):
-        # Warriors have 100 health and a random attack power between 10 and 30
-        super().__init__(name="Warrior", health=100, attack_power=random.randint(10, 30))
+    public void takeDamage(int damage) {
+        health -= damage;
+    }
+}
 
-class Knight(Fighter):
-    def __init__(self):
-        # Knights have 120 health and a random attack power between 15 and 25
-        super().__init__(name="Knight", health=120, attack_power=random.randint(15, 25))
+class Knight extends Warrior {
+    public Knight() {
+        this.attack = 7;
+    }
+}
 
-def fight(fighter1, fighter2):
-    # Simulates a fight until one fighter is no longer alive
-    while fighter1.is_alive and fighter2.is_alive:
-        fighter1.attack(fighter2)
-        if fighter2.is_alive:
-            fighter2.attack(fighter1)
+class Army {
+    private final List<Warrior> units = new ArrayList<>();
 
-    return fighter1.is_alive  # Returns True if fighter1 wins
+    public void addUnits(Class<? extends Warrior> warriorClass, int count) {
+        try {
+            for (int i = 0; i < count; i++) {
+                units.add(warriorClass.getDeclaredConstructor().newInstance());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-# Example usage
-if __name__ == "__main__":
-    chuck = Warrior()
-    bruce = Warrior()
-    carl = Knight()
-    dave = Warrior()
+    public boolean hasUnits() {
+        return !units.isEmpty();
+    }
 
-    # Test fights
-    assert fight(chuck, bruce) == True
-    assert fight(dave, carl) == False
-    assert chuck.is_alive == True
-    assert bruce.is_alive == False
-    assert carl.is_alive == True
-    assert dave.is_alive == False
+    public Warrior getNextUnit() {
+        if (hasUnits()) {
+            return units.get(0);
+        }
+        return null;
+    }
 
-    print("All assertions passed!")
+    public void removeUnit() {
+        if (hasUnits()) {
+            units.remove(0);
+        }
+    }
+}
+
+class Battle {
+    public boolean fight(Army army1, Army army2) {
+        while (army1.hasUnits() && army2.hasUnits()) {
+            Warrior warrior1 = army1.getNextUnit();
+            Warrior warrior2 = army2.getNextUnit();
+
+            if (duel(warrior1, warrior2)) {
+                army2.removeUnit();
+            } else {
+                army1.removeUnit();
+            }
+        }
+        return army1.hasUnits();
+    }
+
+    private boolean duel(Warrior warrior1, Warrior warrior2) {
+        while (warrior1.isAlive() && warrior2.isAlive()) {
+            warrior2.takeDamage(warrior1.getAttack());
+            if (warrior2.isAlive()) {
+                warrior1.takeDamage(warrior2.getAttack());
+            }
+        }
+        return warrior1.isAlive();
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Army army1 = new Army();
+        Army army2 = new Army();
+
+        army1.addUnits(Knight.class, 3);
+        army2.addUnits(Warrior.class, 4);
+
+        Battle battle = new Battle();
+        System.out.println(battle.fight(army1, army2)); // Output: true or false depending on the result
+    }
+}
