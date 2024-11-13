@@ -1,46 +1,54 @@
-import random
+class Warrior {
+    int health = 50;
+    int attack = 5;
+    boolean is_alive = true;
 
-class Fighter:
-    def __init__(self, name, health, attack_power):
-        self.name = name
-        self.health = health
-        self.attack_power = attack_power
-        self.is_alive = True
+    public void takeDamage(int damage) {
+        this.health -= damage;
+        if (this.health <= 0) {
+            this.is_alive = false;
+            this.health = 0; // Ensure health doesn't go negative
+        }
+    }
+}
 
-    def attack(self, opponent):
-        if self.is_alive:
-            opponent.health -= self.attack_power
-            if opponent.health <= 0:
-                opponent.is_alive = False
+class Knight extends Warrior {
+    public Knight() {
+        this.attack = 7; // Increased attack for Knight
+    }
+}
 
-class Warrior(Fighter):
-    def __init__(self):
-        super().__init__(name="Warrior", health=100, attack_power=random.randint(10, 30))
+public class BattleSimulation {
 
-class Knight(Fighter):
-    def __init__(self):
-        super().__init__(name="Knight", health=120, attack_power=random.randint(15, 25))
+    public static boolean fight(Warrior warrior1, Warrior warrior2) {
+        while (warrior1.is_alive && warrior2.is_alive) {
+            // Warrior1 attacks Warrior2
+            warrior2.takeDamage(warrior1.attack);
+            if (!warrior2.is_alive) {
+                return true; // Warrior1 wins
+            }
 
-def fight(fighter1, fighter2):
-    while fighter1.is_alive and fighter2.is_alive:
-        fighter1.attack(fighter2)
-        if fighter2.is_alive:
-            fighter2.attack(fighter1)
+            // Warrior2 attacks Warrior1
+            warrior1.takeDamage(warrior2.attack);
+            if (!warrior1.is_alive) {
+                return false; // Warrior2 wins
+            }
+        }
+        return warrior1.is_alive; // If warrior1 is alive, return true; otherwise, return false
+    }
 
-    return fighter1.is_alive  # Returns True if fighter1 wins, False if fighter2 wins
+    public static void main(String[] args) {
+        Warrior chuck = new Warrior();
+        Warrior bruce = new Warrior();
+        Knight carl = new Knight();
+        Warrior dave = new Warrior();
 
-# Example usage
-if __name__ == "__main__":
-    chuck = Warrior()
-    bruce = Warrior()
-    carl = Knight()
-    dave = Warrior()
+        System.out.println(fight(chuck, bruce)); // Expected: true
+        System.out.println(fight(dave, carl));   // Expected: false
 
-    assert fight(chuck, bruce) == True
-    assert fight(dave, carl) == False
-    assert chuck.is_alive == True
-    assert bruce.is_alive == False
-    assert carl.is_alive == True
-    assert dave.is_alive == False
-
-    print("All assertions passed!")
+        System.out.println("Chuck is alive: " + chuck.is_alive); // Expected: true
+        System.out.println("Bruce is alive: " + bruce.is_alive); // Expected: false
+        System.out.println("Carl is alive: " + carl.is_alive);   // Expected: true
+        System.out.println("Dave is alive: " + dave.is_alive);   // Expected: false
+    }
+}
